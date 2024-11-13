@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/karpathy/tsnejs/tsne.js"></script>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>t-SNE</title>
+  <script src="https://unpkg.com/mathjs/lib/browser/math.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.0/es5/tex-mml-chtml.js"></script>
+
+  <link rel="stylesheet" href="./tsne.css" />
+</head>
+
+<body>
+  <div class="block_container" style="background-color: #00b5e2; margin-left: 10%; margin-right: 10%">
+    <p></p>
+
+    <br />
+
+    <h1>
+      t-SNE
+    </h1>
+    <h2>CIIEC-BUAP</h2>
+    <p style="font-size: 30px; margin-left: 80%">November 13th, 2024</p>
+    <p style="font-size: 20px; margin-left: 80%">
+      <a href="https://github.com/lvillasen/t-SNE">Source Code</a>
+    </p>
+
+    <h1>Introduction</h1>
+    <p style="color:black;font-size:25px;">
+      t-SNE stands for t-distributed Stochastic Neighbor Embedding. It is a powerful 
+      technique for embedding 
+      data into 2D or 3D for visualization purposes. It was introduced by Laurens van der Maaten and Geoffrey Hinton, winner of 2024 Nobel Prize in Physics, in this <a href="https://jmlr.csail.mit.edu/papers/volume9/vandermaaten08a/vandermaaten08a.pdf">paper</a>. 
+      This app uses tSNEJS, written by Andrej
+Karpathy as an implementation of t-SNE in Javascript. This code is documented <a href="https://github.com/karpathy/tsnejs">here</a>.<br><br>
+      A guide to t-SNE can be found <a
+        href="https://observablehq.com/@nstrayer/t-sne-explained-in-plain-javascript">here</a> and 
+        <a href="https://medium.com/@sachinsoni600517/mastering-t-sne-t-distributed-stochastic-neighbor-embedding-0e365ee898ea">here</a>.
+      Perplexity is approximately  the effective number of neighbor points for each point. This app lets you
+      experiment with t-SNE with different datasets that you can paste on the
+      text area below.
+      <br><br>
+      <strong style="color:black;font-size:25px;">Steps to perform t-SNE on a dataset:
+      </strong>
+
+
+
+
+    <ul>
+      <li>
+        <p style="color:black;font-size:25px;">Calculate pairwise distances between all points in their high dimension.
+        </p>
+      </li>
+      <li>
+        <p style="color:black;font-size:25px;">Convert those pairwise distances to pairwise-probabilities.
+        </p>
+      </li>
+      <li>
+        <p style="color:black;font-size:25px;">Map each point to a lower dimensional space
+
+        </p>
+      </li>
+      <li>
+        <p style="color:black;font-size:25px;">Iterate this mapping. until pairwise probabilities in the lower-dimensional mapping are close to the pairwise probabilities in the high dimension.
+
+        </p>
+      </li>
+      
+      <li>
+        <p style="color:black;font-size:25px;">Plot the embedded data as 2D and/or 3D scatter plots
+        </p>
+      </li>
+    </ul>
+    </p>
+    <h1>Data</h1>
+    <p style="color:black;font-size:25px;">
+      The dataset shown on the text area below can be obtained from <a
+        href="https://huggingface.co/datasets/scikit-learn/breast-cancer-wisconsin/resolve/main/breast_cancer.csv">here</a>.
+      The MNIST dataset with handwritten digits of 8x8 pixels can be found <a
+        href="https://github.com/abhijitadhikary/MNIST-Digit-Classificaiton-8x8-">here</a>.
+      Other public datasets can be found <a
+        href="https://github.com/awesomedata/awesome-public-datasets?tab=readme-ov-file#healthcare">here</a> and <a
+        href="https://www.kaggle.com/datasets/">here.</a>
+      <br><br>
+      This app assumes that each dataset consists of comma separated numbers where each
+      row represents a point in the high-dimensional space. <br><br>
+      You can select the first and last columns of the data.
+      You also have the option to skip any number of rows at the top of the text area.
+      <br><br> You can enter the number of the column that contains the labels for the different
+      categories or enter -1
+      if the dataset has no labels.
+    </p>
+    <button id="breastCancer" class="new_styled" onclick="BreastCancer()">Breast Cancer</button>
+    <button id="MNIST" class="new_styled" onclick="MNIST()">Handwritten Digits 8x8</button>
+    <button id="ownDataset" class="new_styled" onclick="ownDataset()">Pasted Dataset</button>
+
+    <textarea id="dataInput"></textarea>
+    <button class="new_styled" onclick="eraseText()" style="background-color: red;">Clear</button>
+
+    <label class="new_styled" style="text-align: left">Column for Category:
+    </label>
+
+    <input class="new_styled" id="ColCat" style="width: 3%" value="0" type="text" />
+
+    <label class="new_styled" style="text-align: left">Data From Column:
+    </label>
+
+    <input class="new_styled" id="Col1" style="width: 3%" value="0" type="text" />
+    <label class="new_styled" style="text-align: left">To Column:
+    </label>
+
+    <input class="new_styled" id="Col2" style="width: 3%" value="0" type="text" />
+
+    <label class="new_styled" style="text-align: left">Rows to Skip:
+    </label>
+
+    <input class="new_styled" id="skipRow" style="width: 3%" value="0" type="text" />
+
+
+    <div id="resultDim"></div>
+    <div id="resultPoints"></div>
+    <hr />
+    <label class="new_styled" style="text-align: left">Number of Iterations:
+    </label>
+
+    <input class="new_styled" id="nIter" style="width: 4%" value="100" type="text" />
+    </label>
+    <label class="new_styled" style="text-align: left">Perplexity:
+    </label>
+
+    <input class="new_styled" id="perplexity" style="width: 4%" value="30" type="text" />
+
+    <label class="new_styled" style="text-align: left">Learning Rate:
+    </label>
+
+    <input class="new_styled" id="learningRate" style="width: 4%" value="10" type="text" />
+
+    
+    <br>
+    <button class="new_styled" onclick="processData()" style="background-color: rgba(0, 255, 0, 0.6);">Run
+      t-SNE</button>
+    <div class="progress">
+                <progress id="progressBar" value="0" max="100" style="width: 100%;"></progress>
+            </div>
+
+    <hr />
+
+
+    <h1>Scatter Plot in 2D</h1>
+    <div id="plot2D" style="border: solid 5px #003b5c; width: 100%"></div>
+    <hr />
+
+    <h1>Scatter Plot in 3D</h1>
+    <div id="plot3D" style="border: solid 5px #003b5c; width: 100%"></div>
+    <hr />
+    <script src="https://cdn.jsdelivr.net/npm/pca-js@1.0.0/pca.min.js"></script>
+    <script src="datasets.js"></script>
+
+    <script src="tsne.js"></script>
+</body>
+
+</html>
