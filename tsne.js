@@ -21,17 +21,11 @@ function ownDataset() {
 }
 
 function processData() {
-  console.log("starting ....");
+  readData();
   maxIter = parseInt(document.getElementById("nIter").value);
-  const ColCat = parseInt(document.getElementById("ColCat").value);
   perplexity = parseInt(document.getElementById("perplexity").value);
   learningRate = parseInt(document.getElementById("learningRate").value);
-  if (ColCat == -1) {
-    labels = [];
-    for (let i = 0; i <= data.length; i++) {
-      labels.push("NL");
-    }
-  }
+  
   tsne = new tsnejs.tSNE({
     dim: 3, // Dimensión de salida (2 o 3)
     perplexity: perplexity,
