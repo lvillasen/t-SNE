@@ -23,7 +23,7 @@ function ownDataset() {
 function processData() {
   console.log("starting ....");
   maxIter = parseInt(document.getElementById("nIter").value);
-  ColCat = parseInt(document.getElementById("ColCat").value);
+  const ColCat = parseInt(document.getElementById("ColCat").value);
   perplexity = parseInt(document.getElementById("perplexity").value);
   learningRate = parseInt(document.getElementById("learningRate").value);
   if (ColCat == -1) {
